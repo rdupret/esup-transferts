@@ -2,13 +2,15 @@ package fr.uphf.pegase.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
+@Setter
 public class PegaseCredentialsDto {
-    private final String username;
+    private String username;
 
-    private final String password;
+    private String password;
 
-    private final boolean token;
+    private boolean token;
 }
