@@ -8,7 +8,7 @@ import fr.uphf.pegase.dto.*;
 
 import java.util.List;
 
-@Headers({"Authorization: Bearer {token}", "Accept: application/json"})
+@Headers({"Authorization: Bearer {token}", "Accept: application/json", "Content-Type: application/json"})
 public interface PegaseRefApiService {
 
     @RequestLine("GET /nomenclatures/communes/codePostal/{codePostal}")
@@ -22,11 +22,12 @@ public interface PegaseRefApiService {
     List<PegaseDepartementDto> getDepartements(@Param("token") String token);
 
     @RequestLine("POST /nomenclatures/EtablissementFrancais/rechercher")
-    @Body("%7B\"numeroUai\": %7B\"operateur\":\"~\",\"valeur\":\"{uai}\"%7D\"%7D")
+    @Body("%7B\"numeroUai\": %7B\"operateur\":\"~\",\"valeur\":\"{uai}\"%7D%7D")
     List<PegaseEtablissementDto> getEtablissementsByUai(@Param("token") String token,
                                                         @Param("uai") String uai);
 
-    @RequestLine("GET /nomenclatures/EtablissementFrancais")
+    @RequestLine("POST /nomenclatures/EtablissementFrancais/rechercher")
+    @Body("{\"dateFinValidite\": {\"operateur\":\"=\", \"valeur\": null}}")
     List<PegaseEtablissementDto> getEtablissements(@Param("token") String token);
 
     @RequestLine("GET /nomenclatures/TypeDiplome")
