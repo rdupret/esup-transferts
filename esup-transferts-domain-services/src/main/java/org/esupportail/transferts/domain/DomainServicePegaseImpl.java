@@ -562,7 +562,7 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                 annee,
                 displayName,
                 mail,
-                "Iconnue",
+                "Inconnue",
                 0,
                 "oui",
                 "oui",
