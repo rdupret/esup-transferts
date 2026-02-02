@@ -236,10 +236,11 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
         List<ResultatEtape> resultatsEtapes = new ArrayList<>();
 
         for (PegaseInscriptionDto inscription : inscriptions) {
-            String chemin = inscription.getCible().getCode();
+            String chemin = inscription.getCible().getFormation().getCode();
+            String periode = inscription.getCible().getPeriode().getCode();
 
             List<PegaseResultatDto> resultats = this.pegaseCocApiService
-                    .getResultats(this.getToken(), this.apiStructure, inscription.getCible().getPeriode().getCode(), supannEtuId, chemin);
+                    .getResultats(this.getToken(), this.apiStructure, periode, supannEtuId, chemin);
 
             int max = "A".equals(source)
                     ? MAX_SESSIONS_RESULTAT_ACCUEIL

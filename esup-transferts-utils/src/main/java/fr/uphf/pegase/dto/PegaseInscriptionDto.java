@@ -20,5 +20,13 @@ public class PegaseInscriptionDto {
         private String libelleLong;
 
         private Periode periode;
+
+        private Formation formation;
+    }
+
+    @Getter
+    @Setter
+    public static class Formation {
+        private String code;
     }
 }
