@@ -49,6 +49,12 @@
 		<property name="urlOpiMetierService" value="${url.opi}" />
 		<property name="urlReferentielMetierService" value="${url.referentiel}" />
 		<property name="urlOffreFormationMetierService" value="${url.offreFormation}" />
+
+		<property name="apiUsername" value="${pegase.api.username}" />
+		<property name="apiPassword" value="${pegase.api.password}" />
+		<property name="apiStructure" value="${pegase.api.structure}" />
+		<property name="apiEnvironment" value="${pegase.api.environment}" />
+		<property name="apiPeriode" value="${pegase.api.periode}" />
 	</bean>
 
 	<bean id="domainServiceDTO" class="org.esupportail.transferts.domain.DomainServiceDTOImpl">

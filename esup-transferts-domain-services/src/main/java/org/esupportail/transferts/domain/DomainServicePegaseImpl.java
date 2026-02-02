@@ -8,7 +8,6 @@ import fr.uphf.pegase.dto.*;
 import fr.uphf.pegase.dto.fragments.Bac;
 import fr.uphf.pegase.services.*;
 import org.esupportail.transferts.domain.beans.*;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,22 +34,22 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
     private String token;
     private LocalDateTime tokenExpirationDate;
 
-    @Value("${pegase.api.username}")
     private String apiUsername;
 
-    @Value("${pegase.api.password}")
     private String apiPassword;
 
-    @Value("${pegase.api.structure}")
     private String apiStructure;
 
-    @Value("${pegase.api.environment}")
-    private String apiEnvironment;
-
-    @Value("${pegase.api.periode}")
     private String apiPeriode;
 
-    public DomainServicePegaseImpl() {
+    public DomainServicePegaseImpl() { }
+
+    public DomainServicePegaseImpl(String username, String password, String environment, String structure, String periode) {
+        this.apiUsername = username;
+        this.apiPassword = password;
+        this.apiStructure = structure;
+        this.apiPeriode = periode;
+
         this.pegaseInsApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())

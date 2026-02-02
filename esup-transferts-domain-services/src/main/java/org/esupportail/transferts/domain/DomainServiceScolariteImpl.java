@@ -5,7 +5,6 @@ package org.esupportail.transferts.domain;
 
 import java.util.*;
 
-import org.esupportail.commons.utils.Assert;
 import org.esupportail.transferts.domain.beans.CGE;
 import org.esupportail.transferts.domain.beans.Composante;
 import org.esupportail.transferts.domain.beans.EtudiantRef;
@@ -53,6 +52,16 @@ public class DomainServiceScolariteImpl implements DomainServiceScolarite, Initi
 	private String urlOpiMetierService;
 	private String urlReferentielMetierService;
 	private String urlOffreFormationMetierService;
+
+	private String apiUsername;
+
+	private String apiPassword;
+
+	private String apiStructure;
+
+	private String apiEnvironment;
+
+	private String apiPeriode;
 
 	/**
 	 * Constructor.
@@ -317,5 +326,25 @@ public class DomainServiceScolariteImpl implements DomainServiceScolarite, Initi
 
 	public void setUrlOffreFormationMetierService(String urlOffreFormationMetierService) {
 		this.urlOffreFormationMetierService = urlOffreFormationMetierService;
+	}
+
+	public void setApiUsername(String apiUsername) {
+		this.apiUsername = apiUsername;
+	}
+
+	public void setApiPassword(String apiPassword) {
+		this.apiPassword = apiPassword;
+	}
+
+	public void setApiStructure(String apiStructure) {
+		this.apiStructure = apiStructure;
+	}
+
+	public void setApiEnvironment(String apiEnvironment) {
+		this.apiEnvironment = apiEnvironment;
+	}
+
+	public void setApiPeriode(String apiPeriode) {
+		this.apiPeriode = apiPeriode;
 	}
 }
