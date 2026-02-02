@@ -859,7 +859,7 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
      * longue, elle aussi).
      */
     private String getToken() {
-        if (this.token != null && LocalDateTime.now().minusHours(1).isBefore(tokenExpirationDate))
+        if (this.token != null && LocalDateTime.now().isBefore(tokenExpirationDate))
             return this.token;
 
         PegaseCredentialsDto credentials = new PegaseCredentialsDto(
