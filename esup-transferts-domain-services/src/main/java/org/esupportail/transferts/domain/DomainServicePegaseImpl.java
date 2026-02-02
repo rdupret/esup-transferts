@@ -262,8 +262,16 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                     ? MAX_SESSIONS_RESULTAT_ACCUEIL
                     : MAX_SESSIONS_RESULTAT_DEPART;
 
-            int start = Math.max(resultats.size() - max, 0);
-            List<PegaseResultatDto> subset = resultats.subList(start, resultats.size());
+            List<PegaseResultatDto> withNote = resultats.stream()
+                    .filter(r -> r.getNoteSession1() != null)
+                    .collect(Collectors.toList());
+
+            Stream<PegaseResultatDto> withoutNote = resultats.stream()
+                    .filter(r -> r.getNoteSession1() == null);
+
+            List<PegaseResultatDto> subset = withNote.size() > max
+                    ? withNote.subList(0, max - 1)
+                    : Stream.concat(withNote.stream(), withoutNote.limit(max - withNote.size())).collect(Collectors.toList());
 
             for (PegaseResultatDto resultat : subset) {
                 List<ResultatSession> resultatsSessions = new ArrayList<>();
@@ -271,21 +279,46 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                 ResultatSession session1 = new ResultatSession();
 
                 session1.setLibSession("Session 1");
-                session1.setResultat(resultat.getResultatSession1().getLibelleAffichage());
-                session1.setMention(resultat.getMentionHonorifique().getLibelleAffichage());
+
+                String noteSession1 = resultat.getNoteSession1() != null
+                        ? String.valueOf(resultat.getNoteSession1())
+                        : "";
+
+                String statusSession1 = resultat.getResultatSession1() != null
+                        ? resultat.getResultatSession1().getLibelleAffichage()
+                        : "";
+
+                session1.setResultat(String.join(" - ", noteSession1, statusSession1));
+
+                if (resultat.getMentionHonorifique() != null)
+                    session1.setMention(resultat.getMentionHonorifique().getLibelleAffichage());
 
                 ResultatSession session2 = new ResultatSession();
 
                 session2.setLibSession("Session 2");
-                session2.setResultat(resultat.getResultatSession2().getLibelleAffichage());
-                session2.setMention(resultat.getMentionHonorifique().getLibelleAffichage());
+
+                String noteSession2 = resultat.getNoteSession2() != null
+                        ? String.valueOf(resultat.getNoteSession2())
+                        : "";
+
+                String statusSession2 = resultat.getResultatSession2() != null
+                        ? resultat.getResultatSession2().getLibelleAffichage()
+                        : "";
+
+                session2.setResultat(String.join(" - ", noteSession2, statusSession2));
+
+                if (resultat.getMentionHonorifique() != null)
+                    session2.setMention(resultat.getMentionHonorifique().getLibelleAffichage());
 
                 resultatsSessions.add(session1);
                 resultatsSessions.add(session2);
 
+                String periodeAnnee = periode.split("-")[1];
+                String annee = periodeAnnee + "/" + (Integer.parseInt(periodeAnnee) + 1);
+
                 ResultatEtape resultatEtape = new ResultatEtape();
-                resultatEtape.setAnnee(inscription.getCible().getPeriode().getLibelleCourt().replace('-', '/'));
-                resultatEtape.setLibEtape(inscription.getCible().getLibelleLong());
+                resultatEtape.setAnnee(annee);
+                resultatEtape.setLibEtape(resultat.getObjetFeuille().getLibelleLong());
                 resultatEtape.setSession(resultatsSessions);
 
                 resultatsEtapes.add(resultatEtape);
