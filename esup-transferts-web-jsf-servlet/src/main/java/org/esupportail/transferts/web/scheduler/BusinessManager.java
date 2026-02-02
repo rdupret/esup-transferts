@@ -226,13 +226,13 @@ public class BusinessManager {
 				{
 					Collections.sort(listeEtudiantRefAlertSilenceVautAccord, new CompareByComposanteAccueil());
 					sujet = "[transferts accueil] Silence vaut accord (délai de 6 semaines dépassés)";
-					body = "Liste des des demande de transferts accueil dépassant le délai des 6 semaines : <BR />\r\n";
+					body = "Liste des demandes de transfert accueil dépassant le délai des 6 semaines : <BR />\r\n";
 				}
 				else
 				{
 					Collections.sort(listeEtudiantRefAlertSilenceVautAccord, new CompareByComposanteDepart());
 					sujet = "[transferts départ] Silence vaut accord (délai de 6 semaines dépassés)";
-					body = "Liste des des demande de transferts départ dépassant le délai des 6 semaines : <BR />\r\n";
+					body = "Liste des demandes de transfert départ dépassant le délai des 6 semaines : <BR />\r\n";
 				}
 
 				if (logger.isDebugEnabled())
@@ -301,13 +301,13 @@ public class BusinessManager {
 				{
 					Collections.sort(listeEtudiantRefAlertDepassementSilenceVautAccord, new CompareByComposanteAccueil());
 					sujet = "[transferts accueil] Silence vaut accord (délai des 2 mois dépassés)";
-					body = "Liste des des demande de transferts accueil dépassant le délai des 2 mois : <BR /><BR />\r\n\r\n";
+					body = "Liste des demandes de transfert accueil dépassant le délai des 2 mois : <BR /><BR />\r\n\r\n";
 				}
 				else
 				{
 					Collections.sort(listeEtudiantRefAlertDepassementSilenceVautAccord, new CompareByComposanteDepart());
 					sujet = "[transferts départ] Silence vaut accord (délai des 2 mois dépassés)";
-					body = "Liste des des demande de transferts départ dépassant le délai des 2 mois : <BR /><BR />\r\n\r\n";
+					body = "Liste des demandes de transfert départ dépassant le délai des 2 mois : <BR /><BR />\r\n\r\n";
 				}
 
 				if (logger.isDebugEnabled())
@@ -483,9 +483,9 @@ public class BusinessManager {
 						listDestinataires=new HashSet(); // on crée notre Set
 
 						if("A".equals(source))
-							body = "Liste des des demande de transferts accueil dépassant le délai des 6 semaines : <BR />\r\n";
+							body = "Liste des demandes de transfert accueil dépassant le délai des 6 semaines : <BR />\r\n";
 						else
-							body = "Liste des des demande de transferts départ dépassant le délai des 6 semaines : <BR />\r\n";
+							body = "Liste des demandes de transfert départ dépassant le délai des 6 semaines : <BR />\r\n";
 
 						body += "<BR />\r\n" + libComp + "<BR />\r\n";
 
@@ -598,9 +598,9 @@ public class BusinessManager {
 						listDestinataires=new HashSet(); // on crée notre Set
 
 						if("A".equals(source))
-							body = "Liste des des demande de transferts accueil dépassant le délai des 2 mois : <BR /><BR />\r\n";
+							body = "Liste des demandes de transfert accueil dépassant le délai des 2 mois : <BR /><BR />\r\n";
 						else
-							body = "Liste des des demande de transferts départ dépassant le délai des 2 mois : <BR /><BR />\r\n";
+							body = "Liste des demandes de transfert départ dépassant le délai des 2 mois : <BR /><BR />\r\n";
 
 						body += "<BR />\r\n" + libComp + "<BR />\r\n";
 
