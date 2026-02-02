@@ -839,10 +839,21 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
         // Adresse
         if (pegaseAdresse != null) {
+
+            String ligne1, ligne3;
+
+            if (pegaseAdresse.getLigne1OuEtage() == null || pegaseAdresse.getLigne1OuEtage().isEmpty()) {
+                ligne1 = pegaseAdresse.getLigne3OuVoie();
+                ligne3 = pegaseAdresse.getLigne1OuEtage();
+            } else {
+                ligne1 = pegaseAdresse.getLigne1OuEtage();
+                ligne3 = pegaseAdresse.getLigne3OuVoie();
+            }
+
             adresse.setNumeroEtudiant(etudiant.getNumeroEtudiant());
-            adresse.setLibAd1(pegaseAdresse.getLigne1OuEtage());
+            adresse.setLibAd1(ligne1);
             adresse.setLibAd2(pegaseAdresse.getLigne2OuBatiment());
-            adresse.setLibAd3(pegaseAdresse.getLigne3OuVoie());
+            adresse.setLibAd3(ligne3);
             adresse.setNumTelPortable(pegaseAdresse.getTelephone());
 
             adresse.setCodPay(pegaseAdresse.getPays().toString());
