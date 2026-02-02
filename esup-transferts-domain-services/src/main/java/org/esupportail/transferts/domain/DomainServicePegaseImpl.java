@@ -47,6 +47,11 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     private String apiPeriode;
 
+    private List<PegaseTypeDiplome> cacheTypeDiplomes;
+    private List<PegaseEtablissementDto> cacheEtablissements;
+
+    private Map<String, String> cacheTypesEtablissements;
+
     public DomainServicePegaseImpl() { }
 
     public DomainServicePegaseImpl(String username, String password, String environment, String structure, String periode) {
@@ -722,14 +727,18 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                 .collect(Collectors.toList());
     }
 
-    @Cacheable(cacheName = "etablissements")
-    public List<PegaseEtablissementDto> getEtablissements() {
-        return this.pegaseRefApiService
-                .getEtablissements(this.getToken());
+    private List<PegaseEtablissementDto> getEtablissements() {
+        if (cacheEtablissements == null)
+            this.cacheEtablissements = this.pegaseRefApiService
+                    .getEtablissements(this.getToken());
+
+        return cacheEtablissements;
     }
 
-    @Cacheable(cacheName = "typesEtablissements")
-    public Map<String, String> getMappingTypeEtablissements() {
+    private Map<String, String> getMappingTypeEtablissements() {
+        if (cacheTypesEtablissements != null)
+            return cacheTypesEtablissements;
+
         Map<String, String> mapping = new HashMap<>();
 
         mapping.put("04", "ING");  // École d'ingénieur
@@ -738,13 +747,17 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
         mapping.put("15", "PBAC"); // Autres écoles post-bac non universitaires
         mapping.put("17", "CNED"); // Centres d'enseignement à distance
 
-        return mapping;
+        this.cacheTypesEtablissements = mapping;
+
+        return cacheTypesEtablissements;
     }
 
-    @Cacheable(cacheName = "typesDiplomes")
-    public List<PegaseTypeDiplome> getTypesDiplomes() {
-        return this.pegaseRefApiService
-                .getTypesDiplomes(this.getToken());
+    private List<PegaseTypeDiplome> getTypesDiplomes() {
+        if (cacheTypeDiplomes == null)
+            this.cacheTypeDiplomes = this.pegaseRefApiService
+                            .getTypesDiplomes(this.getToken());
+
+        return cacheTypeDiplomes;
     }
 
     private String composanteFromCode(String code) {
