@@ -31,6 +31,8 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     private PegaseMofApiService pegaseMofApiService;
 
+    private PegaseIdtExtApiService pegaseIdtExtApiService;
+
     private String token;
     private LocalDateTime tokenExpirationDate;
 
@@ -53,7 +55,7 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
         this.pegaseInsApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
-                .target(PegaseInsApiService.class, String.format("https://ins.%s.pc-scol.fr/api/v5/ins", this.apiEnvironment));
+                .target(PegaseInsApiService.class, String.format("https://ins.%s.pc-scol.fr/api/ins/ext/v2", environment));
 
         this.pegaseAuthApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
@@ -74,16 +76,21 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
                 .target(PegaseMofApiService.class, String.format("https://mof.%s.pc-scol.fr/api/v1/mof", this.apiEnvironment));
+
+        this.pegaseIdtExtApiService = Feign.builder()
+                .decoder(new JacksonDecoder())
+                .encoder(new JacksonEncoder())
+                .target(PegaseIdtExtApiService.class, String.format("https://idt.%s.pc-scol.fr/api/idt/ext/v1", environment));
     }
 
     @Override
     public EtudiantRef getCurrentEtudiant(String supannEtuId) {
         EtudiantRef etudiant = new EtudiantRef();
 
-        PegaseApprenantDto apprenant = this.pegaseInsApiService
-                .getApprenant(this.getToken(), this.apiStructure, supannEtuId);
+        PegaseDossierDto dossier = this.pegaseInsApiService
+                .getDossier(this.getToken(), this.apiStructure, supannEtuId);
 
-        this.copyAttributes(etudiant, apprenant);
+        this.copyAttributes(etudiant, dossier.getApprenant());
 
         // TODO: Blocage
 
@@ -94,18 +101,24 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
     public EtudiantRef getCurrentEtudiantIne(String ine, Date dateNaissance) {
         EtudiantRef etudiant = new EtudiantRef();
 
-        PegaseApprenantDto apprenant = this.pegaseInsApiService
-                .getApprenantByIne(this.getToken(), this.apiStructure, ine);
+        PegaseIdentitesDto identites = this.pegaseIdtExtApiService
+                .identites(this.getToken(), this.apiStructure, ine);
 
-        if (apprenant.getNaissance().getDateDeNaissance() == null)
+        if (identites.getItems().isEmpty())
             return null;
 
-        LocalDate birthDate = LocalDate.parse(apprenant.getNaissance().getDateDeNaissance());
+        PegaseDossierDto dossier = this.pegaseInsApiService
+                .getDossier(this.getToken(), this.apiStructure, identites.getItems().get(0).getCodeApprenant());
+
+        if (dossier.getApprenant().getNaissance().getDateDeNaissance() == null)
+            return null;
+
+        LocalDate birthDate = LocalDate.parse(dossier.getApprenant().getNaissance().getDateDeNaissance());
 
         if (!birthDate.isEqual(dateNaissance.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()))
             return null;
 
-        this.copyAttributes(etudiant, apprenant);
+        this.copyAttributes(etudiant, dossier.getApprenant());
 
         // TODO: Blocage
 
@@ -204,10 +217,10 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     @Override
     public TrBac getBaccalaureat(String supannEtuId) {
-        PegaseApprenantDto apprenant = this.pegaseInsApiService
-                .getApprenant(this.getToken(), this.apiStructure, supannEtuId);
+        PegaseDossierDto dossier = this.pegaseInsApiService
+                .getDossier(this.getToken(), this.apiStructure, supannEtuId);
 
-        Bac bac = apprenant.getBac();
+        Bac bac = dossier.getApprenant().getBac();
 
         String etablissement;
 
@@ -502,10 +515,16 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
     public Integer getAuthEtu(String ine, Date dateNaissanceApogee) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        PegaseApprenantDto apprenant = this.pegaseInsApiService
-                .getApprenantByIne(this.getToken(), this.apiStructure, ine);
+        PegaseIdentitesDto identites = this.pegaseIdtExtApiService
+                .identites(this.getToken(), this.apiStructure, ine);
 
-        return apprenant.getNaissance().getDateDeNaissance().equals(dateFormat.format(dateNaissanceApogee))
+        if (identites.getItems().isEmpty())
+            throw new RuntimeException("Impossible de trouver l'étudiant avec son INE.");
+
+        PegaseDossierDto dossier = this.pegaseInsApiService
+                .getDossier(this.getToken(), this.apiStructure, identites.getItems().get(0).getCodeApprenant());
+
+        return dossier.getApprenant().getNaissance().getDateDeNaissance().equals(dateFormat.format(dateNaissanceApogee))
                 ? 0
                 : 1;
     }
@@ -585,28 +604,34 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
     public IdentifiantEtudiant getIdentifiantEtudiantByIne(String codNneIndOpi, String codCleNneIndOpi) {
         String ine = codNneIndOpi + codCleNneIndOpi;
 
-        PegaseApprenantDto apprenant = this.pegaseInsApiService
-                .getApprenantByIne(this.getToken(), this.apiStructure, ine);
+        PegaseIdentitesDto identites = this.pegaseIdtExtApiService
+                .identites(this.getToken(), this.apiStructure, ine);
+
+        if (identites.getItems().isEmpty())
+            throw new RuntimeException("Impossible de trouver l'étudiant par son INE.");
+
+        PegaseDossierDto dossier = this.pegaseInsApiService
+                .getDossier(this.getToken(), this.apiStructure, identites.getItems().get(0).getCodeApprenant());
 
         IdentifiantEtudiant identifiantEtudiant = new IdentifiantEtudiant();
 
-        identifiantEtudiant.setCodEtu(Integer.parseInt(apprenant.getCode()));
+        identifiantEtudiant.setCodEtu(Integer.parseInt(dossier.getApprenant().getCode()));
         identifiantEtudiant.setNumeroIne(ine);
 
         // TODO: Vérifier si ça convient ; il ne semble pas y avoir d'équivalent Pégase
-        identifiantEtudiant.setCodInd(Integer.parseInt(apprenant.getCode()));
+        identifiantEtudiant.setCodInd(Integer.parseInt(dossier.getApprenant().getCode()));
 
         return identifiantEtudiant;
     }
 
     @Override
     public TrInfosAdmEtu getInfosAdmEtu(String supannEtuId) {
-        PegaseApprenantDto apprenant = this.pegaseInsApiService
-                .getApprenant(this.getToken(), this.apiStructure, supannEtuId);
+        PegaseDossierDto dossier = this.pegaseInsApiService
+                .getDossier(this.getToken(), this.apiStructure, supannEtuId);
 
         return new TrInfosAdmEtu(
-                apprenant.getNaissance().getNationalite(),
-                apprenant.getNaissance().getLibelleNationalite());
+                dossier.getApprenant().getNaissance().getNationalite(),
+                dossier.getApprenant().getNaissance().getLibelleNationalite());
     }
 
     @Override

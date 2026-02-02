@@ -19,16 +19,6 @@ public interface PegaseInsApiService {
                                 @Param("structure") String structure,
                                 @Param("numEtu") String numEtu);
 
-    @RequestLine("GET /gestion/apprenants/{structure}/{numEtu}/")
-    PegaseApprenantDto getApprenant(@Param("token") String token,
-                                    @Param("structure") String structure,
-                                    @Param("numEtu") String numEtu);
-
-    @RequestLine("GET /gestion/apprenants/{structure}/ine/{ine}/")
-    PegaseApprenantDto getApprenantByIne(@Param("token") String token,
-                                         @Param("structure") String structure,
-                                         @Param("ine") String ine);
-
     @RequestLine("GET /pistes/inscriptions/{structure}/?limit=1&recherche={numEtu}")
     PegasePistesDto getPistes(@Param("token") String token,
                               @Param("structure") String structure,
