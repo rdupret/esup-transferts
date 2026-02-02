@@ -2,6 +2,8 @@ package org.esupportail.transferts.domain;
 
 import com.googlecode.ehcache.annotations.Cacheable;
 import feign.Feign;
+import feign.codec.StringDecoder;
+import feign.form.FormEncoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import fr.uphf.pegase.dto.*;
@@ -59,9 +61,9 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                 .target(PegaseInsApiService.class, String.format("https://ins.%s.pc-scol.fr/api/ins/ext/v2", environment));
 
         this.pegaseAuthApiService = Feign.builder()
-                .decoder(new JacksonDecoder())
-                .encoder(new JacksonEncoder())
-                .target(PegaseAuthApiService.class, String.format("https://authn-app.%s.pc-scol.fr", this.apiEnvironment));
+                .encoder(new FormEncoder())
+                .decoder(new StringDecoder())
+                .target(PegaseAuthApiService.class, String.format("https://authn-app.%s.pc-scol.fr", environment));
 
         this.pegaseRefApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
