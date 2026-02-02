@@ -4634,10 +4634,15 @@ public class AdministrationController extends AbstractContextAwareController {
 		this.currentDemandeTransferts.getTransferts().setTemoinTransfertValide(2);
 		currentAvis.setDateSaisie(new Date());
 		getDomainService().addAvis(this.currentAvis);
-		currentAvis = new Avis();
 
 		if (logger.isDebugEnabled())
 			logger.debug("currentDemandeTransferts.getCorrespondances().size()===>"+currentDemandeTransferts.getCorrespondances().size()+"<===");
+
+		String mailKey = this.currentAvis.getIdDecisionDossier() == 1
+				? "TRANSFERT_MAIL_NON_FAVORABLE"
+				: "TRANSFERT_MAIL_FAVORABLE";
+
+		currentAvis = new Avis();
 
 		Correspondance correspondance = new Correspondance();
 		try {
@@ -4647,7 +4652,7 @@ public class AdministrationController extends AbstractContextAwareController {
 //			correspondance.setTitre(getString("TRANSFERT_MAIL_SUJET"));
 //			correspondance.setMsg(getString("TRANSFERT_MAIL_BODY", this.currentDemandeTransferts.getPrenom1(), this.currentDemandeTransferts.getNomPatronymique()));
 			correspondance.setTitre(getString("TRANSFERT_MAIL_SUJET"));
-			correspondance.setMsg(getString("TRANSFERT_MAIL_BODY", this.currentDemandeTransferts.getPrenom1(), this.currentDemandeTransferts.getNomPatronymique()));
+			correspondance.setMsg(getString(mailKey, this.currentDemandeTransferts.getPrenom1(), this.currentDemandeTransferts.getNomPatronymique()));
 		} catch (Exception e1) {
 			logger.error(e1);
 		}
@@ -4661,9 +4666,8 @@ public class AdministrationController extends AbstractContextAwareController {
 		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
 
 		String sujet = getString("TRANSFERT_MAIL_SUJET");
-		String body = getString("TRANSFERT_MAIL_BODY");
 		try {
-			body = getString("TRANSFERT_MAIL_BODY", this.currentDemandeTransferts.getPrenom1(),
+			String body = getString(mailKey, this.currentDemandeTransferts.getPrenom1(),
 					this.currentDemandeTransferts.getNomPatronymique());
 
 			getSmtpService().send(new InternetAddress(this.currentDemandeTransferts.getAdresse().getEmail()), sujet, body, body);
