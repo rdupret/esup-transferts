@@ -165,11 +165,13 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     @Override
     public List<TrEtablissementDTO> getListeEtablissements(String typeEtablissement, String dept) {
+        String departement = dept != null && dept.length() == 2 ? "0" + dept : dept;
+
         String pegaseTypeEtablissement = this.getMappingTypeEtablissements().get(typeEtablissement);
 
         Stream<PegaseEtablissementDto> etablissements = this.getEtablissements()
                 .stream()
-                .filter(e -> e.getDepartement().getCode().equals(dept))
+                .filter(e -> e.getDepartement().getCode().equals(departement))
                 .filter(e -> e.getTypeUai().getTypeUai().equals(pegaseTypeEtablissement));
 
         return etablissements
@@ -204,9 +206,11 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     @Override
     public TrEtablissementDTO getEtablissementByDepartement(String dep) {
+        String departement = dep.length() == 2 ? "0" + dep : dep;
+
         return this.getEtablissements()
                 .stream()
-                .filter(e -> e.getDepartement().getCode().equals(dep))
+                .filter(e -> e.getDepartement().getCode().equals(departement))
                 .findFirst()
                 .map(e -> new TrEtablissementDTO(
                         e.getNumeroUai(),
