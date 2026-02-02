@@ -101,4 +101,23 @@
 			<version>12.3</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>pegase</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<excludes>
+								<exclude>org/esupportail/transferts/domain/DomainServiceApogeeImpl.java</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

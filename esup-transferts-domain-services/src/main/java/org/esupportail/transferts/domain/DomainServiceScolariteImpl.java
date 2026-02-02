@@ -79,10 +79,7 @@ public class DomainServiceScolariteImpl implements DomainServiceScolarite, Initi
 			this.forcerBlocageListSplit.add(this.forcerBlocage);
 		}
 
-		dss = new DomainServiceApogeeImpl(forcerBlocageListSplit, user, password,
-				urlEtudiantMetierService,urlAdministratifMetierService,urlGeographieMetierService,
-				urlScolariteMetierService,urlPedagogiqueMetierService,urlEtablissementMetierService,
-				urlOpiMetierService,urlReferentielMetierService,urlOffreFormationMetierService);
+		dss = new DomainServicePegaseImpl(apiUsername, apiPassword, apiEnvironment, apiStructure, apiPeriode);
 	}
 
 	@Override
