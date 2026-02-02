@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class DomainServicePegaseImpl implements DomainServiceScolarite {
@@ -29,7 +30,7 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     private PegaseCocApiService pegaseCocApiService;
 
-    private PegaseMofApiService pegaseMofApiService;
+    private PegaseOdfApiService pegaseOdfApiService;
 
     private PegaseIdtExtApiService pegaseIdtExtApiService;
 
@@ -72,10 +73,10 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                 .encoder(new JacksonEncoder())
                 .target(PegaseCocApiService.class, String.format("https://coc.%s.pc-scol.fr/api/coc/publication/v1", this.apiEnvironment));
 
-        this.pegaseMofApiService = Feign.builder()
+        this.pegaseOdfApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
-                .target(PegaseMofApiService.class, String.format("https://mof.%s.pc-scol.fr/api/v1/mof", this.apiEnvironment));
+                .target(PegaseOdfApiService.class, String.format("https://odf.%s.pc-scol.fr/api/odf/ext/v1", environment));
 
         this.pegaseIdtExtApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
@@ -395,38 +396,62 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
     @Override
     @Cacheable(cacheName = "getOffreDeFormation")
     public List<OffreDeFormationsDTO> getOffreDeFormation(String rne, Integer annee) {
-        List<PegaseMinimalFormationDto> formations = this.pegaseMofApiService
-                .getFormations(this.getToken(), this.apiStructure, this.apiPeriode);
+        PegaseObjetsMaquetteDto firstPageFormations = this.pegaseOdfApiService
+                .getObjetsMaquette(this.getToken(), this.apiStructure, 0);
 
-        return formations
-                .stream()
-                .map(f -> {
+        Stream<PegaseMinimalObjetMaquetteDto> maquettes = getPegaseMinimalObjetMaquetteDtoStream(firstPageFormations);
+
+        return maquettes
+                .map(m -> {
+                    PegaseObjetMaquetteDto maquette = this.pegaseOdfApiService
+                            .getObjetMaquette(this.getToken(), this.apiStructure, m.getId());
+
+                    PegaseObjetMaquetteDto.DescripteursEnquete descripteur = maquette
+                            .getDescripteursEnquete();
+
+                    String codeDiplome;
+
+                    if (maquette.getDescripteursEnquete().getDescripteursSise() == null ||
+                            maquette.getDescripteursEnquete().getDescripteursSise().getTypeDiplome() == null) {
+                        codeDiplome = null;
+                    } else {
+                        codeDiplome = maquette.getDescripteursEnquete().getDescripteursSise().getTypeDiplome().getCode();
+                    }
+
                     Optional<PegaseTypeDiplome> typeDiplome = this.getTypesDiplomes()
                             .stream()
-                            .filter(t -> t.getCode().equals(f.getCodeTypeDiplome()))
+                            .filter(t -> t.getCode().equals(codeDiplome))
                             .findFirst();
 
-                    PegaseFormationDto formation = this.pegaseMofApiService
-                            .getFormation(this.getToken(), this.apiStructure, f.getCode(), f.getPeriode().getCode());
-
-                    Integer niveau = Integer.valueOf(formation.getNiveauSise());
+                    Integer niveau = descripteur.getNiveauDiplomeSise() != null ? Integer.parseInt(descripteur.getNiveauDiplomeSise()) : 0;
                     String libelleNiveau = niveau == 1 ? "1ère année" : String.format("%dème année", niveau);
+
+                    String codeStructureBudgetaire;
+                    String denominationPrincipale;
+
+                    if (maquette.getDescripteursObjetMaquette().getStructurePrincipale() == null) {
+                        codeStructureBudgetaire = "0597132G";
+                        denominationPrincipale = "UPHF";
+                    } else {
+                        codeStructureBudgetaire = "0597132G";
+                        denominationPrincipale = maquette.getDescripteursObjetMaquette().getStructurePrincipale();
+                    }
 
                     return new OffreDeFormationsDTO(
                             rne,
                             annee,
-                            typeDiplome.map(PegaseTypeDiplome::getCode).orElse(null),
-                            typeDiplome.map(PegaseTypeDiplome::getLibelleAffichage).orElse(null),
-                            f.getCode(),
-                            f.getVersion(),
-                            f.getCode(),
-                            String.valueOf(f.getVersion()), // TODO: Est-ce correct ? (ve.getCodVrsVet() côté Apogée)
-                            f.getLibelleLong(),
-                            f.getLibelleLong(),
-                            f.getStructureBudgetaire().getCodeUai(),
-                            f.getStructureBudgetaire().getDenominationPrincipale(),
-                            formation.getCodeStructurePrincipale(),
-                            formation.getCodeStructurePrincipale(),
+                            typeDiplome.map(PegaseTypeDiplome::getCode).orElse("N/D"),
+                            typeDiplome.map(PegaseTypeDiplome::getLibelleAffichage).orElse("N/D"),
+                            m.getCode(),
+                            1,
+                            m.getCode(),
+                            String.valueOf(1), // TODO: Est-ce correct ? (ve.getCodVrsVet() côté Apogée)
+                            m.getLibelleLong(),
+                            m.getLibelleLong(),
+                            codeStructureBudgetaire,
+                            denominationPrincipale,
+                            codeStructureBudgetaire,
+                            denominationPrincipale,
                             niveau,
                             libelleNiveau,
                             "oui",
@@ -434,6 +459,16 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Stream<PegaseMinimalObjetMaquetteDto> getPegaseMinimalObjetMaquetteDtoStream(PegaseObjetsMaquetteDto firstPageFormations) {
+        Stream<PegaseMinimalObjetMaquetteDto> remaining = IntStream.range(1, firstPageFormations.getTotalPages())
+                .mapToObj(p -> this.pegaseOdfApiService.getObjetsMaquette(this.getToken(), this.apiStructure, p))
+                .map(PegaseObjetsMaquetteDto::getItems)
+                .flatMap(List::stream)
+                .filter(item -> item.getEspaceLibelle().startsWith("2023"));
+
+         return Stream.concat(firstPageFormations.getItems().stream(), remaining);
     }
 
     @Override
