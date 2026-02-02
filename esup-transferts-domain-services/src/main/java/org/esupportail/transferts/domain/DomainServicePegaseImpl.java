@@ -21,15 +21,15 @@ import java.util.stream.Stream;
 
 public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
-    private final PegaseInsApiService pegaseInsApiService;
+    private PegaseInsApiService pegaseInsApiService;
 
-    private final PegaseAuthApiService pegaseAuthApiService;
+    private PegaseAuthApiService pegaseAuthApiService;
 
-    private final PegaseRefApiService pegaseRefApiService;
+    private PegaseRefApiService pegaseRefApiService;
 
-    private final PegaseCocApiService pegaseCocApiService;
+    private PegaseCocApiService pegaseCocApiService;
 
-    private final PegaseMofApiService pegaseMofApiService;
+    private PegaseMofApiService pegaseMofApiService;
 
     private String token;
     private LocalDateTime tokenExpirationDate;
