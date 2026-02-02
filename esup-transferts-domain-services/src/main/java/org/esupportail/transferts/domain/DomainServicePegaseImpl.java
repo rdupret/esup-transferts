@@ -664,8 +664,11 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
         Map<String, String> result = new HashMap<>();
 
-        if (dossier.getInscriptions().size() > 0) {
-            PegaseInscriptionDto inscription = dossier.getInscriptions().get(0);
+        if (!dossier.getInscriptions().isEmpty()) {
+            PegaseInscriptionDto inscription = dossier.getInscriptions().stream()
+                    .filter(PegaseInscriptionDto::isPrincipale)
+                    .findFirst()
+                    .orElseGet(() -> dossier.getInscriptions().get(0));
 
             String codeComposante = inscription.getCible().getCode().substring(0, 1);
             String libelleComposante = this.composanteFromCode(codeComposante);
