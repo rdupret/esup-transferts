@@ -135,6 +135,9 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     @Override
     public List<TrCommuneDTO> getCommunes(String codePostal) {
+        if (codePostal == null || codePostal.isEmpty())
+            return null;
+
         return this.pegaseRefApiService
                 .getCommunes(this.getToken(), codePostal)
                 .stream()
@@ -236,7 +239,9 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
         String etablissement;
 
-        if (bac.getPays().equals("100")) {
+        if (bac.getDepartement() == null) {
+            etablissement = "INCONNUE";
+        } else if (bac.getPays().equals("100")) {
             etablissement = this.getEtablissementByDepartement(bac.getDepartement()).getLibAcademie();
         } else {
             etablissement = "ETRANGER";
@@ -410,10 +415,13 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
 
     @Override
     public TrPaysDTO getPaysByCodePays(String codePays) {
+        if (codePays == null)
+            return null;
+
         return this.pegaseRefApiService
                 .getCountries(this.getToken())
                 .stream()
-                .filter(p -> p.getCodeIso3611().equals(codePays))
+                .filter(p -> codePays.equals(p.getCodeIso3611()))
                 .findFirst()
                 .map(p -> new TrPaysDTO(p.getCodeIso3611(), p.getLibelleAffichage(), p.getLibelleNationalite()))
                 .orElse(null);
