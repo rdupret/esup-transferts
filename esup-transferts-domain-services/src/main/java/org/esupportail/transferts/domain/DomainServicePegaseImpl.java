@@ -68,12 +68,12 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
         this.pegaseRefApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
-                .target(PegaseRefApiService.class, String.format("https://ref.%s.pc-scol.fr/api/v1/ref", this.apiEnvironment));
+                .target(PegaseRefApiService.class, String.format("https://ref.%s.pc-scol.fr/api/v1/ref", environment));
 
         this.pegaseCocApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
                 .encoder(new JacksonEncoder())
-                .target(PegaseCocApiService.class, String.format("https://coc.%s.pc-scol.fr/api/coc/publication/v1", this.apiEnvironment));
+                .target(PegaseCocApiService.class, String.format("https://coc.%s.pc-scol.fr/api/coc/publication/v2", environment));
 
         this.pegaseOdfApiService = Feign.builder()
                 .decoder(new JacksonDecoder())
@@ -571,7 +571,7 @@ public class DomainServicePegaseImpl implements DomainServiceScolarite {
         List<PegaseStructureDto> structures = this.pegaseRefApiService
                 .getStructures(this.getToken());
 
-        if (structures.size() == 0)
+        if (structures.isEmpty())
             return null;
 
         List<Composante> composantes = new ArrayList<>();
