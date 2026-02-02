@@ -9,4 +9,10 @@ public class PegaseTypeDiplome {
     private String code;
 
     private String libelleAffichage;
+
+    public String getLibelleAffichage() {
+        return (libelleAffichage != null && !libelleAffichage.isEmpty())
+                ? libelleAffichage
+                : "N/D";
+    }
 }
